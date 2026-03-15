@@ -232,9 +232,7 @@ This class `MonoidalTree t` contains three methods:
   ```
   which converts given `Foldable` container to a tree.
 
-  > [!IMPORTANT]
-  >
-  > The order should be consistent with `toList` from `Foldable` instance that
+  > **Note:** the order should be consistent with `toList` from `Foldable` instance that
   > you implemented previously.
   >
   > In other words the following property should hold:
@@ -336,9 +334,7 @@ This class `Sequence s` contains several methods:
   ```
   which converts given `Foldable` container to a sequence.
 
-  > [!IMPORTANT]
-  >
-  > The order should be consistent with `toList` from `Foldable` instance that
+  > **Note:** the order should be consistent with `toList` from `Foldable` instance that
   > you implemented previously.
   >
   > In other words the following property should hold:
@@ -556,7 +552,7 @@ Instead of going into more details about balancing for both insertion and remova
 I will refer you to excellent lecture materials
 of [CS230 Data Structures](https://www.cs.princeton.edu/~dpw/courses/cos326-12/ass/2-3-trees.pdf) course.
 
-Below are also some hints for implementation in Haskell in case you get stuck.
+Below are also some tips for implementation in Haskell in case you get stuck.
 
 > [!TIP]
 >
@@ -566,7 +562,7 @@ Below are also some hints for implementation in Haskell in case you get stuck.
 > Do not be afraid to **introduce custom helper data types** that will help you
 > track all necessary information during upward phase.
 > Even if this data type will be used only for insertion or only for removal, it is ok.
-> The closer data type corresponds to the problem that you are trying to solve --- the better.
+> The closer data type corresponds to the problem that you are trying to solve -- the better.
 >
 > It is also always useful to introduce helper functions that handle one particular part of a more complex one.
 
@@ -607,9 +603,11 @@ this tree are available on the [website](https://www.staff.city.ac.uk/~ross/pape
 of authors who developed this structure. In fact, original [paper](https://www.staff.city.ac.uk/~ross/papers/FingerTree.pdf)
 is also available on this website.
 
-This exact finger tree is the basis for highly efficient implementation for sequences in Haskell in
-[Data.Sequence](https://hackage.haskell.org/package/containers/docs/Data-Sequence.html) and can also be
-used independently via [fingertree](https://hackage.haskell.org/package/fingertree) package maintained by original authors.
+> [!NOTE]
+>
+> This exact finger tree is the basis for highly efficient implementation for sequences in Haskell in
+> [Data.Sequence](https://hackage.haskell.org/package/containers/docs/Data-Sequence.html) and can also be
+> used independently via [fingertree](https://hackage.haskell.org/package/fingertree) package maintained by original authors.
 
 > [!IMPORTANT]
 >
@@ -686,5 +684,5 @@ Next you should implement a public interface for your binary tree as `MonoidalTr
 ### Random-access sequence and priority queue
 
 Now for the last time you need implement random-access sequence in [src/Task4/Seq.hs](src/Task4/Seq.hs)
-and priority queue in [src/Task4/PQueue.hs](src/Task4/PQueue.hs) using ultimate data structure --- finger tree.
+and priority queue in [src/Task4/PQueue.hs](src/Task4/PQueue.hs) using ultimate data structure -- finger tree.
 
