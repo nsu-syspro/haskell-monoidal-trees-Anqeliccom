@@ -4,6 +4,7 @@
 module Task2.Seq where
 
 import Common.Sequence
+import Common.MonoidalTree
 
 import Task1 (Measured(..), Size(..))
 import Task2.Tree
@@ -20,23 +21,60 @@ newtype Elem a = Elem { getElem :: a }
 
 -- | Measures given element as 'Size 1'
 instance Measured (Size a) (Elem a) where
-  measure = error "TODO: define measure (Measured (Size a) (Task2.Elem a))"
+  measure _ = Size 1 
 
 instance Foldable Seq where
-  foldMap = error "TODO: define foldMap (Foldable Task2.Seq)"
+  foldMap f = foldMap (f . getElem) . getTree
 
   -- An O(1) implementation of length is possible
   -- due to size of the tree being cached at each node
   length :: forall a. Seq a -> Int
-  length = error "TODO: define length (Foldable Task2.Seq)"
+  length (Seq t) = getSize (measure t :: Size a)
 
 -- * Sequence instance
 
 instance Sequence Seq where
-  empty = error "TODO: define empty (Sequence Task2.Seq)"
-  toSequence = error "TODO: define toSequence (Sequence Task2.Seq)"
-  (+|) = error "TODO: define (+|) (Sequence Task2.Seq)"
-  (|+) = error "TODO: define (|+) (Sequence Task2.Seq)"
-  insertAt = error "TODO: define insertAt (Sequence Task2.Seq)"
-  removeAt = error "TODO: define removeAt (Sequence Task2.Seq)"
-  elemAt = error "TODO: define elemAt (Sequence Task2.Seq)"
+  empty = Seq Empty
+  toSequence = foldr (+|) empty 
+  x +| Seq t =  Seq (Elem x <| t)
+  Seq t |+ x = Seq (t |> Elem x)
+
+  insertAt :: forall a. Int -> a -> Seq a -> Seq a
+  insertAt i v (Seq tree) = Seq (go (max 0 i) tree)
+    where
+      go _ Empty    = leaf (Elem v)
+      go 0 t        = branch (leaf (Elem v)) t
+      go _ (Leaf x) = branch (leaf x) (leaf (Elem v))
+      go j (Branch _ l r)
+        | j < leftSize = branch (go j l) r
+        | otherwise    = branch l (go (j - leftSize) r)
+        where
+          leftSize = getLen l
+
+  removeAt :: forall a. Int -> Seq a -> Seq a
+  removeAt i seqT@(Seq tree)
+    | i < 0 || i >= length seqT = Seq tree
+    | otherwise                 = Seq (go i tree)
+    where
+      go _ Empty    = Empty
+      go _ (Leaf _) = Empty
+      go j (Branch _ l r)
+        | j < leftSize = branch (go j l) r
+        | otherwise    = branch l (go (j - leftSize) r)
+        where
+          leftSize = getLen l
+
+  elemAt :: forall a. Int -> Seq a -> Maybe a
+  elemAt i (Seq tree) = go i tree
+    where
+      go _ Empty    = Nothing
+      go 0 (Leaf x) = Just (getElem x)
+      go _ (Leaf _) = Nothing
+      go j (Branch _ l r)
+        | j < leftSize = go j l
+        | otherwise    = go (j - leftSize) r
+        where
+          leftSize = getLen l
+
+getLen :: forall a. Tree (Size a) (Elem a) -> Int
+getLen t = getSize (measure t :: Size a)
