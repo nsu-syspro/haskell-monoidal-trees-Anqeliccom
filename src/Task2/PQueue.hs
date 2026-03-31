@@ -4,10 +4,10 @@
 module Task2.PQueue where
 
 import Common.PriorityQueue
+import Common.MonoidalTree
 
 import Task1 (Measured(..), MinMax(..), Min(..), Max(..))
 import Task2.Tree
-import Common.MonoidalTree
 
 -- * Priority queue definition
 
@@ -30,30 +30,25 @@ instance PriorityQueue PQueue where
   entries (PQueue tree) = foldr (\e res -> getEntry e : res) [] tree
   insert k v (PQueue tree) =  PQueue (tree |> Entry (k, v))
 
-  extractMin :: forall k v. Ord k => PQueue k v -> Maybe (v, PQueue k v)
-  extractMin (PQueue Empty) = Nothing
-  extractMin (PQueue tree)  = Just (go tree)
+  extractMin :: Ord k => PQueue k v -> Maybe (v, PQueue k v)
+  extractMin = extractBy f (<=)
     where
-      go Empty    = error ".."
-      go (Leaf e) = (snd (getEntry e), PQueue Empty)
-      go (Branch _ l r)
-        | getMin' l <= getMin' r = let (v, PQueue t) = go l in (v, PQueue (branch t r))
-        | otherwise              = let (v, PQueue t) = go r in (v, PQueue (branch l t)) 
-        where 
-          getMin' t = case (measure t :: MinMax k) of
-            MinMax (Min k, _) -> k
-            MinMax (PosInf, _) -> error ".."
+      f (MinMax (Min k, _))  = k
+      f (MinMax (PosInf, _)) = error ".."
 
-  extractMax :: forall k v. Ord k => PQueue k v -> Maybe (v, PQueue k v)
-  extractMax (PQueue Empty) = Nothing
-  extractMax (PQueue tree)  = Just (go tree)
+  extractMax :: Ord k => PQueue k v -> Maybe (v, PQueue k v)
+  extractMax = extractBy f (>=)
     where
-      go Empty    = error ".."
-      go (Leaf e) = (snd (getEntry e), PQueue Empty)
-      go (Branch _ l r)
-        | getMax' l >= getMax' r = let (v, PQueue t) = go l in (v, PQueue (branch t r))
-        | otherwise              = let (v, PQueue t) = go r in (v, PQueue (branch l t))
-        where
-         getMax' t = case (measure t :: MinMax k) of
-            MinMax (_, Max k)  -> k
-            MinMax (_, NegInf) -> error ".."
+      f (MinMax (_, Max k))  = k
+      f (MinMax (_, NegInf)) = error ".."
+
+extractBy :: forall k v. Ord k => (MinMax k -> k) -> (k -> k -> Bool) -> PQueue k v -> Maybe (v, PQueue k v)
+extractBy _ _ (PQueue Empty) = Nothing
+extractBy f cmp (PQueue tree)  = Just (go tree)
+  where
+    go Empty      = error ".."
+    go (Leaf e)   = (snd (getEntry e), PQueue Empty)
+    go (Branch _ l r)
+      | cmp (getP l) (getP r) = let (v, PQueue t) = go l in (v, PQueue (branch t r))
+      | otherwise             = let (v, PQueue t) = go r in (v, PQueue (branch l t))
+    getP t = f (measure t :: MinMax k)
